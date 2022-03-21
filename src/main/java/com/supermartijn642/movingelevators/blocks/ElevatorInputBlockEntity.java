@@ -22,7 +22,7 @@ public abstract class ElevatorInputBlockEntity extends CamoBlockEntity implement
     @Override
     public void tick(){
         if(!this.level.isClientSide && this.lastRedstone != this.redstone){
-            if(this.redstone)
+            if(this.redstone && this.hasGroup())
                 this.getGroup().onButtonPress(false, false, this.getFloorLevel());
             this.lastRedstone = this.redstone;
             this.setChanged();
