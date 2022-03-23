@@ -58,6 +58,7 @@ public class ElevatorGroup {
     private Map<Integer,Set<BlockPos>> comparatorListeners = new Int2ObjectArrayMap<>();
 
     private int syncCounter = 0;
+    private boolean removed = false;
 
     public ElevatorGroup(World world, int x, int z, Direction facing){
         this.world = world;
@@ -678,6 +679,17 @@ public class ElevatorGroup {
     private void syncMovement(){
         if(!this.world.isClientSide)
             MovingElevators.CHANNEL.sendToDimension(this.world.dimension(), new PacketSyncElevatorMovement(this.x, this.z, this.facing, this.currentY, this.speed));
+    }
+
+    public void markAsRemoved() {
+        this.removed = true;
+    }
+
+    public boolean isValidGroupFor(ControllerBlockEntity controller) {
+        if(removed)
+            return false;
+        BlockPos pos = controller.getBlockPos();
+        return pos.getX() == x && pos.getZ() == z && controller.getFacing() == facing;
     }
 
     private static class FloorData {

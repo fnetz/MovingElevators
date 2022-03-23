@@ -21,6 +21,8 @@ public class ControllerBlockEntity extends ElevatorInputBlockEntity {
     private DyeColor color = DyeColor.GRAY;
     private boolean showButtons = true;
 
+    private ElevatorGroup group;
+
     public ControllerBlockEntity(){
         super(MovingElevators.elevator_tile);
     }
@@ -112,7 +114,9 @@ public class ControllerBlockEntity extends ElevatorInputBlockEntity {
 
     @Override
     public ElevatorGroup getGroup(){
-        return this.level.getCapability(ElevatorGroupCapability.CAPABILITY).resolve().map(groups -> groups.getGroup(this)).orElse(null);
+        if(this.group == null || !this.group.isValidGroupFor(this))
+            this.group = this.level.getCapability(ElevatorGroupCapability.CAPABILITY).resolve().map(groups -> groups.getGroup(this)).orElse(null);
+        return group;
     }
 
     @Override

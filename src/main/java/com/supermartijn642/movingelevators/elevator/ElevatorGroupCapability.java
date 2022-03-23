@@ -121,8 +121,8 @@ public class ElevatorGroupCapability {
 
     public void add(ControllerBlockEntity controller){
         ElevatorGroupPosition pos = new ElevatorGroupPosition(controller.getBlockPos(), controller.getFacing());
-        this.groups.putIfAbsent(pos, new ElevatorGroup(this.world, pos.x, pos.z, pos.facing));
-        this.groups.get(pos).add(controller);
+        ElevatorGroup group = this.groups.computeIfAbsent(pos, p -> new ElevatorGroup(this.world, p.x, p.z, p.facing));
+        group.add(controller);
     }
 
     public void remove(ControllerBlockEntity controller){
@@ -131,6 +131,7 @@ public class ElevatorGroupCapability {
         group.remove(controller);
         if(group.getFloorCount() == 0){
             this.groups.remove(pos);
+            group.markAsRemoved();
             MovingElevators.CHANNEL.sendToDimension(this.world.dimension(), new PacketRemoveElevatorGroup(group));
         }
     }
@@ -149,8 +150,11 @@ public class ElevatorGroupCapability {
      * This should only be called client-side from the {@link PacketRemoveElevatorGroup}
      */
     public void removeGroup(int x, int z, Direction facing){
-        if(this.world.isClientSide)
-            this.groups.remove(new ElevatorGroupPosition(x, z, facing));
+        if(this.world.isClientSide){
+            ElevatorGroup group = this.groups.remove(new ElevatorGroupPosition(x, z, facing));
+            if(group != null)
+                group.markAsRemoved();
+        }
     }
 
     public ElevatorGroup getGroup(ControllerBlockEntity tile){
